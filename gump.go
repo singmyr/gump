@@ -33,13 +33,25 @@ func (c *CustomListener) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	SSLCert := os.Getenv("SSL_CERT_FILE")
+	SSLKey := os.Getenv("SSL_KEY_FILE")
+
+	useHTTPS := false
+	if SSLCert != "" && SSLKey != "" {
+		useHTTPS = true
+	}
+
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Run Gump, run!")
 
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), &CustomListener{})
+	if useHTTPS {
+		err = http.ListenAndServeTLS(fmt.Sprintf(":%d", port), SSLCert, SSLKey, &CustomListener{})
+	} else {
+		err = http.ListenAndServe(fmt.Sprintf(":%d", port), &CustomListener{})
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
